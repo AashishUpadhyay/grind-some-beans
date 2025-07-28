@@ -97,28 +97,23 @@ public class MinimumTimeToCrossTheRiver {
         }
         this.memo = new HashMap<MemoKey, Double>();
         HashMap<Integer, List<List<Integer>>> states = new HashMap<>();
-        System.out.println(states);
         buildStatesAndCombinations(states, n, k);
-        return dfs(true, (int) Math.pow(2, time.length) - 1, 0, 0, states, time, mul);
+        return dfs(true, (int) Math.pow(2, time.length) - 1, 0, 0, states, time, mul, m);
     }
 
     private double dfs(boolean atsrc, int stateAtSrc, int currStage, int singleReturn,
             HashMap<Integer, List<List<Integer>>> states,
             int[] time,
-            double[] mul) {
+            double[] mul,
+            int m) {
         if (stateAtSrc == 0) {
             return 0;
         }
         if (singleReturn > 3) {
             return Double.MAX_VALUE;
-        } else if (singleReturn == 3) {
-            System.out.println(singleReturn);
         }
 
         MemoKey currKey = new MemoKey(stateAtSrc, currStage, singleReturn, atsrc);
-        // System.out.println("MemoKey - State: " + currKey.stateAtSrc + ", Stage: " +
-        // currKey.currStage +
-        // ", SingleReturn: " + currKey.singleReturn + ", AtSource: " + currKey.atsrc);
         if (memo.containsKey(currKey)) {
             return memo.get(currKey);
         }
@@ -132,9 +127,9 @@ public class MinimumTimeToCrossTheRiver {
                     newState &= ~(1 << i);
                     costToCross = Math.max(costToCross, time[i] * mul[currStage]);
                 }
-                int nextStage = (currStage + (int) Math.floor(costToCross)) % time.length;
+                int nextStage = (currStage + (int) Math.floor(costToCross)) % m;
                 double remainingCost = dfs(false, newState, nextStage,
-                        combination.size() == 1 ? singleReturn + 1 : singleReturn, states, time, mul);
+                        combination.size() == 1 ? singleReturn + 1 : singleReturn, states, time, mul, m);
                 minTime = Math.min(minTime,
                         costToCross + remainingCost);
             }
@@ -145,8 +140,8 @@ public class MinimumTimeToCrossTheRiver {
                     int newState = stateAtSrc;
                     newState |= (1 << i);
                     double costToCross = time[i] * mul[currStage];
-                    int nextStage = (currStage + (int) Math.floor(costToCross)) % time.length;
-                    double remainingCost = dfs(true, newState, nextStage, singleReturn, states, time, mul);
+                    int nextStage = (currStage + (int) Math.floor(costToCross)) % m;
+                    double remainingCost = dfs(true, newState, nextStage, singleReturn, states, time, mul, m);
                     minTime = Math.min(minTime,
                             costToCross + remainingCost);
                 }
