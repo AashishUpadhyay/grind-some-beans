@@ -1,11 +1,11 @@
 package com.practice.problems;
 
-public interface LRU {
-    public void put(int key, int value);
+public interface LRU<K, V> {
+    V get(K key);
 
-    public int get(int key);
+    void put(K key, V value);
 
-    public void remove(int key);
+    void remove(K key);
 
-    public void clear();
+    void clear();
 }

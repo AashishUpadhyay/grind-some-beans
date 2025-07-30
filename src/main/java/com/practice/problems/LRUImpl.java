@@ -3,47 +3,45 @@ package com.practice.problems;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class LRUImpl implements LRU {
+public class LRUImpl<K, V> implements LRU<K, V> {
 
     private class LinkedListNode {
-        int data;
+        K key;
+        V value;
         LinkedListNode next;
         LinkedListNode prev;
 
-        public LinkedListNode(int data) {
-            this.data = data;
+        public LinkedListNode(K key, V value) {
+            this.key = key;
+            this.value = value;
         }
 
         @Override
         public boolean equals(Object other) {
-            LinkedListNode o = (LinkedListNode) other;
-            if (o == null) {
-                return false;
-            }
-
-            if (this.data == o.data) {
+            if (this == other)
                 return true;
-            }
-            return false;
+            if (other == null || getClass() != other.getClass())
+                return false;
+            LinkedListNode that = (LinkedListNode) other;
+            return Objects.equals(key, that.key);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.data);
+            return Objects.hash(key);
         }
     }
 
     private class LinkedList {
+        LinkedListNode head;
+        LinkedListNode tail;
+        int size;
 
         public LinkedList() {
             this.head = null;
             this.tail = null;
             this.size = 0;
         }
-
-        LinkedListNode head;
-        LinkedListNode tail;
-        int size;
 
         public void moveToFirst(LinkedListNode node) {
             if (node == null) {
@@ -109,8 +107,10 @@ public class LRUImpl implements LRU {
             this.tail = rv.prev;
             if (this.tail != null) {
                 this.tail.next = null;
+            } else {
+                this.head = null; // List is now empty
             }
-            size = size - 1;
+            size--;
             return rv;
         }
 
@@ -125,65 +125,98 @@ public class LRUImpl implements LRU {
                 throw new UnsupportedOperationException("Empty node being removed!");
             }
 
-            LinkedListNode ptr = this.head;
-            while (ptr.next != null) {
-                if (ptr.equals(node)) {
-                    ptr.next.prev = ptr.prev;
-                    size = size - 1;
-                    return ptr;
+            if (node == head) {
+                head = node.next;
+                if (head != null) {
+                    head.prev = null;
+                } else {
+                    tail = null;
                 }
-                ptr = ptr.next;
+            } else if (node == tail) {
+                tail = node.prev;
+                tail.next = null;
+            } else {
+                node.prev.next = node.next;
+                node.next.prev = node.prev;
             }
-            return null;
+
+            size--;
+            return node;
         }
     }
 
     private final int capacity;
-    private final HashMap<Integer, LinkedListNode> map;
+    private final HashMap<K, LinkedListNode> map;
     private final LinkedList linkedList;
 
     public LRUImpl(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Capacity must be positive");
+        }
         this.capacity = capacity;
-        this.map = new HashMap<Integer, LinkedListNode>();
+        this.map = new HashMap<>();
         this.linkedList = new LinkedList();
     }
 
-    public int get(int key) {
-        int rv = -1;
-        if (this.map.containsKey(key)) {
-            LinkedListNode keyNode = this.map.get(key);
-            rv = keyNode.data;
-            this.linkedList.moveToFirst(keyNode);
+    @Override
+    public V get(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
         }
-        return rv;
+
+        LinkedListNode node = map.get(key);
+        if (node == null) {
+            return null;
+        }
+
+        linkedList.moveToFirst(node);
+        return node.value;
     }
 
-    public void put(int key, int value) {
-        if (this.map.containsKey(key)) {
-            LinkedListNode keyNode = this.map.get(key);
-            keyNode.data = value;
-            this.linkedList.moveToFirst(keyNode);
+    @Override
+    public void put(K key, V value) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
+        }
+
+        LinkedListNode node = map.get(key);
+        if (node != null) {
+            node.value = value;
+            linkedList.moveToFirst(node);
         } else {
-            LinkedListNode newNode = new LinkedListNode(value);
-            while (this.linkedList.size >= this.capacity) {
-                LinkedListNode lastNode = this.linkedList.removeLast();
-                this.map.remove(lastNode.data);
+            LinkedListNode newNode = new LinkedListNode(key, value);
+            if (map.size() >= capacity) {
+                LinkedListNode lru = linkedList.removeLast();
+                map.remove(lru.key);
             }
-            this.linkedList.addFirst(newNode);
-            this.map.put(key, newNode);
+            linkedList.addFirst(newNode);
+            map.put(key, newNode);
         }
     }
 
-    public void remove(int key) {
-        if (this.map.containsKey(key)) {
-            LinkedListNode keyNode = this.map.get(key);
-            this.map.remove(key);
-            this.linkedList.remove(keyNode);
+    @Override
+    public void remove(K key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
+        }
+
+        LinkedListNode node = map.remove(key);
+        if (node != null) {
+            linkedList.remove(node);
         }
     }
 
+    @Override
     public void clear() {
-        this.map.clear();
-        this.linkedList.clear();
+        map.clear();
+        linkedList.clear();
+    }
+
+    public int size() {
+        return map.size();
+    }
+
+    public boolean isEmpty() {
+        return map.isEmpty();
     }
 }
