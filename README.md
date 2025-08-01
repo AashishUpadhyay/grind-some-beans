@@ -40,6 +40,7 @@ To run a specific test class:
 
 ```bash
 mvn test -Dtest=LongestPalindromicPathInGraphTest
+mvn test -Dtest=LRUTest#testConcurrentAccess
 ```
 
 ## Problems

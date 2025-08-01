@@ -1,5 +1,11 @@
 package com.practice.problems;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,5 +78,92 @@ public class LRUTest {
         lru.clear();
         Assert.assertNull(lru.get(1));
         Assert.assertNull(lru.get(2));
+    }
+
+    @Test
+    public void testConcurrentAccess() {
+        List<Thread> threads = new ArrayList<>();
+        try {
+
+            LRU<UUID, String> lru = new LRUImpl<>(100);
+
+            threads.clear();
+            int availableProcessors = Runtime.getRuntime().availableProcessors();
+            int producers = availableProcessors / 2;
+            int consumers = availableProcessors - producers;
+            Queue<UUID> concurrentQueue = new ConcurrentLinkedQueue<>();
+            for (int i = 0; i < producers; ++i) {
+                threads.add(new Thread(() -> {
+                    long endTime = System.currentTimeMillis() + 12000;
+                    while (System.currentTimeMillis() < endTime) {
+                        UUID newUUID = UUID.randomUUID();
+                        System.out.println(String.format("Adding %s to the cache", newUUID));
+                        lru.put(newUUID, newUUID.toString());
+                        concurrentQueue.add(newUUID);
+                        try {
+                            Thread.sleep(50); // Add small delay between operations
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }));
+            }
+
+            for (int j = 0; j < consumers; ++j) {
+                threads.add(new Thread(() -> {
+                    long endTime = System.currentTimeMillis() + 18000;
+                    while (System.currentTimeMillis() < endTime) {
+                        UUID uuid = concurrentQueue.poll();
+                        if (uuid != null) {
+                            String value = lru.get(uuid);
+                            if (value != null) {
+                                Assert.assertEquals(uuid.toString(), value);
+                                System.out.println(String.format("Read %s from the cache", uuid));
+                            }
+                        }
+                        try {
+                            Thread.sleep(50); // Add small delay between operations
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }));
+            }
+            threads.forEach(Thread::start);
+            threads.forEach(thread -> {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+        } catch (Exception ex) {
+            Assert.fail("Test failed: " + ex.getMessage());
+        } finally {
+            // Interrupt all threads to ensure they stop
+            for (Thread thread : threads) {
+                thread.interrupt();
+            }
+            // Wait for all threads to finish
+            for (Thread thread : threads) {
+                try {
+                    thread.join(1000); // Wait max 1 second per thread
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
     }
 }
