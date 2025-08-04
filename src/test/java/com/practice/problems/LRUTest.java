@@ -4,6 +4,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 import java.util.Queue;
 
 import org.junit.Assert;
@@ -81,7 +88,11 @@ public class LRUTest {
     }
 
     @Test
+<<<<<<< HEAD
     public void testConcurrentAccess() {
+=======
+    public void testConcurrentAccess1() {
+>>>>>>> e5de54a (Progress)
         List<Thread> threads = new ArrayList<>();
         try {
 
@@ -166,4 +177,93 @@ public class LRUTest {
             }
         }
     }
+<<<<<<< HEAD
+=======
+
+    @Test
+    public void testConcurrentAccess2() {
+        LRU<UUID, String> lru = new LRUImpl<>(100);
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(availableProcessors);
+        int producers = availableProcessors / 2;
+        int consumers = availableProcessors - producers;
+        Queue<UUID> uuidsQ = new ConcurrentLinkedQueue<UUID>();
+
+        for (int i = 0; i < producers; i++) {
+            executor.submit(() -> {
+                long endTime = System.currentTimeMillis() + 120000;
+                while (System.currentTimeMillis() < endTime) {
+                    UUID newUUID = UUID.randomUUID();
+                    lru.put(newUUID, newUUID.toString());
+                    System.out.println(String.format("Added %s to the cache", newUUID));
+                    uuidsQ.add(newUUID);
+                }
+            });
+        }
+
+        for (int i = 0; i < consumers; i++) {
+            executor.submit(() -> {
+                long endTime = System.currentTimeMillis() + 180000;
+                while (System.currentTimeMillis() < endTime || (uuidsQ.size() > 0)) {
+                    UUID uuidToFetch = uuidsQ.poll();
+                    String result = lru.get(uuidToFetch);
+                    if (result != null) {
+                        assertEquals(result, uuidToFetch.toString());
+                        System.out.println(String.format("Retrieved %s from the cache", result));
+                    }
+                }
+            });
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Test
+    public void testConcurrentAccess3() {
+        LRU<UUID, String> lru = new LRUImpl<>(100);
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        int producers = availableProcessors / 2;
+        int consumers = availableProcessors - producers;
+        Queue<UUID> uuidsQ = new ConcurrentLinkedQueue<UUID>();
+
+        for (int i = 0; i < producers; i++) {
+            executor.submit(() -> {
+                long endTime = System.currentTimeMillis() + 120000;
+                while (System.currentTimeMillis() < endTime) {
+                    UUID newUUID = UUID.randomUUID();
+                    lru.put(newUUID, newUUID.toString());
+                    System.out.println(String.format("Added %s to the cache", newUUID));
+                    uuidsQ.add(newUUID);
+                }
+            });
+        }
+
+        for (int i = 0; i < consumers; i++) {
+            executor.submit(() -> {
+                long endTime = System.currentTimeMillis() + 180000;
+                while (System.currentTimeMillis() < endTime || (uuidsQ.size() > 0)) {
+                    UUID uuidToFetch = uuidsQ.poll();
+                    String result = lru.get(uuidToFetch);
+                    if (result != null) {
+                        assertEquals(result, uuidToFetch.toString());
+                        System.out.println(String.format("Retrieved %s from the cache", result));
+                    }
+                }
+            });
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+>>>>>>> e5de54a (Progress)
 }
