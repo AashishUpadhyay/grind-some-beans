@@ -31,6 +31,11 @@
             <artifactId>logback-classic</artifactId>
             <version>1.4.11</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.3.29</version> <!-- Latest stable version in 5.3.x series -->
+        </dependency>        
     </dependencies>
 
     <build>

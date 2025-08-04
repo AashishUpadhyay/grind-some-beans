@@ -88,11 +88,7 @@ public class LRUTest {
     }
 
     @Test
-<<<<<<< HEAD
-    public void testConcurrentAccess() {
-=======
     public void testConcurrentAccess1() {
->>>>>>> e5de54a (Progress)
         List<Thread> threads = new ArrayList<>();
         try {
 
@@ -177,8 +173,6 @@ public class LRUTest {
             }
         }
     }
-<<<<<<< HEAD
-=======
 
     @Test
     public void testConcurrentAccess2() {
@@ -265,5 +259,4 @@ public class LRUTest {
             Thread.currentThread().interrupt();
         }
     }
->>>>>>> e5de54a (Progress)
 }
