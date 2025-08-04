@@ -36,6 +36,29 @@ mvn clean compile
 mvn test
 ```
 
+### Running Java Programs
+
+To run a specific Java class with a main method:
+
+1. First compile the project:
+
+```bash
+mvn clean compile
+```
+
+2. Then run the class (from the target/classes directory):
+
+```bash
+cd target/classes
+java com.practice.problems.Problems
+```
+
+Example output:
+
+```
+Output = 4
+```
+
 To run a specific test class:
 
 ```bash
