@@ -110,6 +110,56 @@ public class Concurrency {
     }
 
     // Example of how to use the async methods
+    // Alternative async implementations
+    public CompletableFuture<Integer> asyncMethodWithExecutor(int input) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    Thread.sleep(2000);
+                    return input * 2;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }, executor);
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    // Using ForkJoinPool for CPU-intensive tasks
+    public CompletableFuture<Integer> asyncMethodWithForkJoinPool(int input) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(2000);
+                return input * 2;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }, ForkJoinPool.commonPool());
+    }
+
+    public CompletableFuture<Integer> asyncMethodWithCustomExecutor(int input) {
+        ExecutorService customExecutor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors(),
+                r -> {
+                    Thread t = new Thread(r, "CustomAsync-" + Thread.currentThread().getId());
+                    t.setDaemon(true);
+                    return t;
+                });
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(2000);
+                return input * 2;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }, customExecutor);
+    }
+
     public void demonstrateAsyncMethods() throws ExecutionException, InterruptedException, TimeoutException {
         System.out.println("Starting async operations...");
 
@@ -139,5 +189,18 @@ public class Concurrency {
 
         Integer finalResult = completableFuture.get();
         System.out.println("CompletableFuture result: " + finalResult);
+
+        // Demonstrate alternative async implementations
+        CompletableFuture<Integer> executorResult = asyncMethodWithExecutor(10)
+                .thenApply(n -> n + 5);
+        System.out.println("Executor result: " + executorResult.get());
+
+        CompletableFuture<Integer> forkJoinResult = asyncMethodWithForkJoinPool(15)
+                .thenApply(n -> n * 3);
+        System.out.println("ForkJoinPool result: " + forkJoinResult.get());
+
+        CompletableFuture<Integer> customResult = asyncMethodWithCustomExecutor(20)
+                .thenApply(n -> n / 2);
+        System.out.println("Custom executor result: " + customResult.get());
     }
 }
