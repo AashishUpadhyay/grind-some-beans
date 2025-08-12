@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * @param <K> Type of cache keys
  * @param <V> Type of cache values
  */
-public class LRUImpl<K, V> implements LRU<K, V> {
+public class LRUImpl<K, V> implements Cache<K, V> {
     private static final Logger logger = LoggerFactory.getLogger(LRUImpl.class);
 
     private class LinkedListNode {

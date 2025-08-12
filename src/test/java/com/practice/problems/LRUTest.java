@@ -20,7 +20,7 @@ public class LRUTest {
 
     @Test
     public void testIntegerLRU() {
-        LRU<Integer, Integer> lru = new LRUImpl<>(3);
+        Cache<Integer, Integer> lru = new LRUImpl<>(3);
         lru.put(1, 1);
         Assert.assertEquals(Integer.valueOf(1), lru.get(1));
         Assert.assertNull(lru.get(2));
@@ -36,7 +36,7 @@ public class LRUTest {
 
     @Test
     public void testStringLRU() {
-        LRU<String, String> lru = new LRUImpl<>(2);
+        Cache<String, String> lru = new LRUImpl<>(2);
         lru.put("key1", "value1");
         lru.put("key2", "value2");
         Assert.assertEquals("value1", lru.get("key1"));
@@ -47,13 +47,13 @@ public class LRUTest {
 
     @Test
     public void testEmptyCache() {
-        LRU<Integer, String> lru = new LRUImpl<>(2);
+        Cache<Integer, String> lru = new LRUImpl<>(2);
         Assert.assertNull(lru.get(1));
     }
 
     @Test
     public void testUpdateExistingKey() {
-        LRU<Integer, String> lru = new LRUImpl<>(2);
+        Cache<Integer, String> lru = new LRUImpl<>(2);
         lru.put(1, "one");
         lru.put(1, "ONE");
         Assert.assertEquals("ONE", lru.get(1));
@@ -61,13 +61,13 @@ public class LRUTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullKey() {
-        LRU<String, Integer> lru = new LRUImpl<>(2);
+        Cache<String, Integer> lru = new LRUImpl<>(2);
         lru.put(null, 1);
     }
 
     @Test
     public void testNullValue() {
-        LRU<Integer, String> lru = new LRUImpl<>(2);
+        Cache<Integer, String> lru = new LRUImpl<>(2);
         lru.put(1, null);
         Assert.assertNull(lru.get(1));
     }
@@ -79,7 +79,7 @@ public class LRUTest {
 
     @Test
     public void testClear() {
-        LRU<Integer, Integer> lru = new LRUImpl<>(2);
+        Cache<Integer, Integer> lru = new LRUImpl<>(2);
         lru.put(1, 1);
         lru.put(2, 2);
         lru.clear();
@@ -92,7 +92,7 @@ public class LRUTest {
         List<Thread> threads = new ArrayList<>();
         try {
 
-            LRU<UUID, String> lru = new LRUImpl<>(100);
+            Cache<UUID, String> lru = new LRUImpl<>(100);
 
             threads.clear();
             int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -176,7 +176,7 @@ public class LRUTest {
 
     @Test
     public void testConcurrentAccess2() {
-        LRU<UUID, String> lru = new LRUImpl<>(100);
+        Cache<UUID, String> lru = new LRUImpl<>(100);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(availableProcessors);
         int producers = availableProcessors / 2;
@@ -219,7 +219,7 @@ public class LRUTest {
 
     @Test
     public void testConcurrentAccess3() {
-        LRU<UUID, String> lru = new LRUImpl<>(100);
+        Cache<UUID, String> lru = new LRUImpl<>(100);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newCachedThreadPool();
         int producers = availableProcessors / 2;

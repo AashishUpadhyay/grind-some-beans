@@ -1,6 +1,6 @@
 package com.practice.problems;
 
-public interface LRU<K, V> {
+public interface Cache<K, V> {
     V get(K key);
 
     void put(K key, V value);
